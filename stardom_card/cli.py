@@ -21,8 +21,17 @@ def parse_card(url: str) -> tuple[str, list[dict]]:
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
 
+
     title_el = soup.select_one("h1.match_head_title")
-    title = title_el.get_text(strip=True) if title_el else url
+    base_title = title_el.get_text(strip=True) if title_el else url
+
+    # Extract the date (e.g. "2025年5月17日（土）")
+    date_el = soup.select_one("p.date")
+    if date_el:
+        date_str = date_el.get_text(strip=True)
+        title = f"{base_title}{date_str}"
+    else:
+        title = base_title
 
     # Fetch show time
     ticket_el = soup.select_one("a.btnstyle4")
@@ -36,7 +45,7 @@ def parse_card(url: str) -> tuple[str, list[dict]]:
                     span = div.parent.find("span", class_="time")
                     if span:
                         time_str = span.get_text(strip=True)
-                        title = f"{title} ({time_str})"
+                        title = f"{title}({time_str})"
                     break
         except requests.RequestException:
             pass
