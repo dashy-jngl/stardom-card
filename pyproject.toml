@@ -1,0 +1,24 @@
+[build-system]
+requires = ["flit_core >=3.11,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "stardom-card"
+version = "0.1.0"
+description = "CLI tool to scrape and display World Wonder Ring Stardom match cards."
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+  { name="Dashy9000", email="you@example.com" }
+]
+license = { text = "MIT" }
+
+# This is now a list of strings, not a table!
+dependencies = [
+  "requests",
+  "beautifulsoup4",
+  "deep_translator"
+]
+
+[project.scripts]
+stardom-card = "stardom_card.cli:main"
