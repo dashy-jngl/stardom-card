@@ -8,44 +8,158 @@ from deep_translator import GoogleTranslator
 
 SCHEDULE_URL = "https://wwr-stardom.com/schedule"
 
+NAME_OVERRIDES = {
+    #A
+    "アイリカ": "Airica",
+    "鉄アキラ": "Akira Kurogane",
+    "壮麗亜美": "Ami Sorei",
+    "金屋あんね": "Anne Kanaya",
+    "星輝ありさ": "Arisa Hoshiki",
+    "郷田明日香" : "Asuka Goda",
+    "アティーナ": "Athena",
+    "さくらあや": "Aya Sakura",
+    "稲葉あづさ": "Azusa Inaba",
+    "稲葉あずさ（JTO）": "Azusa Inaba",
+    #B
+    #C
+    "橋本千紘": "Chihiro Hashimoto",
+    #D
+    "ダンプ松本": "Dump Matsumoto",
+    #F
+    "フキゲンです★": "Fukigen Death",
+    
+    #H
+    "羽南": "Hanan",
+    "梅咲遥": "Haruka Umesaki",
+    "ひめか": "Himeka",
+    "叶ミク": "Himiko",
+    "妃南": "Hina",
+    "姫ゆりあ": "Hime-Yuria",
+    "炎華": "Honoka",
+    "花穂ノ利": "Hanori Hana",
+    "葉月": "Hazuki",
+    #I
+    "星いぶき": "Ibuki Hoshi",
+    "青木 いつ希": "Itsuki Aoki",
+    #J
+    "ジョディ・スレット": "Jody Threat",
+    "ジョニー・ロビー": "Johnnie Robbie",
+    #K
+    "関口翔": "Kakeru Sekiguchi",
+    "カリエンティタ": "Kalientita",
+    "米山香織": "Kaori Yoneyama",
+    "ケルシー・ヘザー": "Kelsey Heather",
+    "虎龍清花": "Kiyoka Kotatsu",
+    "コグマ": "Koguma",
+    "狐伯": "Kohaku",
+    "小波": "Konami",
+    "玖麗さやか": "Kurara Sayaka",
+    #L
+    "レディ・Ｃ": "Lady C",
+    "ジュビア": "Lluvia",
+    #M
+    "舞華": "Maika",
+    "尾﨑妹加": "Maika Ozaki",
+    "舞夢": "Mai Sakurai",
+    "愛海": "Manami",
+    "浜辺纏": "Matoi Hamabe",
+    "マヤ・ワールド": "Maya World",
+    "岩谷麻優": "Mayu Iwatani",
+    "岩谷麻由": "Mayu Iwatani",
+    "マゼラティ": "Mazzerati",
+    "メーガン・ベーン": "Megan Bayne",
+    "星来芽依": "Mei Seira",
+    "岩田美香": "Mika Iwata",
+    "白川未奈": "Mina Shirakawa",
+    "光芽ミリア": "Miria Koga",
+    "神姫楽ミサ": "Misa Kagura",
+    "天咲光由": "Miyu Amasaki",
+    "香藤満月": "Mizuki Kato",
+    "向後桃": "Momo Kohgo",
+    "渡辺桃": "Momo Watanabe",
+    #N
+    "羽多乃ナナミ": "Nanami Hatano",
+    "刀羅ナツコ": "Natsuko Tora",
+    "なつぽい": "Natsupoi",
+    "高橋奈七永": "Nanae Takahashi",
+    #R
+    "八神蘭奈": "Ranna Yagami",
+    "ラム会長": "Ram Kaicho",
+    "レイチェル・ローズ ": "Raychell Rose",
+    "梨杏": "Rian",
+    "吏南": "Rina",
+    "山下りな": "Rina Yamashita",
+    "琉悪夏": "Ruaka",
+    #S
+    "鹿島沙希": "Saki Kashima",
+    "安納サオリ": "Saori Anou",
+    "咲蘭": "Saran",
+    "飯田沙耶": "Saya Iida",
+    "上谷沙弥": "Saya Kamitani",
+
+    "ソイ": "Soy",
+    "スターライト・キッド": "Starlight Kid",
+    "鈴季すず":"Suzu Suzuki",
+    "朱里": "Syuri",
+    #T
+    "タバタ": "Tabata",
+    "本間多恵": "Tae Honma",
+    "中野たむ": "Tam Nakano",
+    "タイ・メロ": "Tay Melo",
+    "テクラ": "Thekla",
+    "稲葉ともか": "Tomoka Inaba",
+    "稲葉ともか（JTO）": "Tomoka Inaba",
+    #U
+    "ウナギ・サヤカ": "Unagi Sayaka",
+    #V
+    "ヴァイプレス": "Vipress",
+    #W
+    "月山和香": "Waka Tsukiyama",
+    #X
+    "ジーナ": "Xena",
+    #Y
+    "マコトユマ": "Yuma Makoto",
+    "まなせゆうな": "Yuna Manase",
+    "堀田 祐美子": "Yumiko Hotta",
+    "岡優里佳": "Yurika Oka",
+    "優宇": "Yuu",
+    
+    #Z
+}
+
 
 def get_card_links() -> list[str]:
     r = requests.get(SCHEDULE_URL)
     r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
-    return [a["href"] for a in soup.find_all("a", class_="btn", string="対戦カード")]
+    return [
+        a["href"]
+        for a in soup.find_all("a", class_="btn", string="対戦カード")
+    ]
 
 
 def parse_card(url: str) -> tuple[str, list[dict]]:
-    r = requests.get(url)
-    r.raise_for_status()
+    r = requests.get(url); r.raise_for_status()
     soup = BeautifulSoup(r.text, "html.parser")
-
 
     title_el = soup.select_one("h1.match_head_title")
     base_title = title_el.get_text(strip=True) if title_el else url
 
-    # Extract the date (e.g. "2025年5月17日（土）")
+    # date
     date_el = soup.select_one("p.date")
-    if date_el:
-        date_str = date_el.get_text(strip=True)
-        title = f"{base_title}{date_str}"
-    else:
-        title = base_title
+    title = f"{date_el.get_text(strip=True)}』{base_title}" if date_el else base_title
 
-    # Fetch show time
+    # time
     ticket_el = soup.select_one("a.btnstyle4")
     if ticket_el and ticket_el.get("href"):
         try:
-            r2 = requests.get(ticket_el["href"])
-            r2.raise_for_status()
+            r2 = requests.get(ticket_el["href"]); r2.raise_for_status()
             soup2 = BeautifulSoup(r2.text, "html.parser")
             for div in soup2.find_all("div", class_="data_bg2"):
                 if "本戦開始時間" in div.get_text():
                     span = div.parent.find("span", class_="time")
                     if span:
-                        time_str = span.get_text(strip=True)
-                        title = f"{title}({time_str})"
+                        title = f"『{span.get_text(strip=True)} {title}"
                     break
         except requests.RequestException:
             pass
@@ -53,23 +167,26 @@ def parse_card(url: str) -> tuple[str, list[dict]]:
     matches = []
     for wrap in soup.select("div.match_cover div.match_wrap"):
         mt = wrap.select_one("h2.sub_content_title1")
-        match_type = mt.get_text(strip=True) if mt else ""
+        match_type = mt.get_text(strip=True) if mt else "Match"
 
-        # Row-style
+        # two-team row style
         row = wrap.find("div", class_="match_block_row")
         if row:
-            left = [n.get_text(strip=True) for n in row.select("div.leftside h3.name")]
-            right = [n.get_text(strip=True) for n in row.select("div.rightside h3.name")]
-            matches.append({'type': match_type, 'left': left, 'right': right})
-            continue
-
-        # Column-style
-        col = wrap.find("div", class_="match_block_column")
-        if col:
+            teams = [
+                [n.get_text(strip=True) for n in row.select("div.leftside h3.name")],
+                [n.get_text(strip=True) for n in row.select("div.rightside h3.name")],
+            ]
+        else:
+            # N-team column style
+            col = wrap.find("div", class_="match_block_column") or []
             uls = col.select("ul.match_block_3col")
-            left = [n.get_text(strip=True) for n in uls[0].select("h3.name")] if len(uls) > 0 else []
-            right = [n.get_text(strip=True) for n in uls[1].select("h3.name")] if len(uls) > 1 else []
-            matches.append({'type': match_type, 'left': left, 'right': right})
+            teams = [
+                [n.get_text(strip=True) for n in ul.select("h3.name")]
+                for ul in uls
+            ]
+
+        matches.append({"type": match_type, "teams": teams})
+
     return title, matches
 
 
@@ -87,73 +204,122 @@ def pad_center(text: str, width: int) -> str:
     return " " * left + text + " " * right
 
 
-def print_match_table(match_type: str, left: list[str], right: list[str], w1: int, w2: int, w3: int) -> None:
-    top = f"┌{'─'*w1}┬{'─'*w2}┬{'─'*w3}┐"
-    bottom = f"└{'─'*w1}┴{'─'*w2}┴{'─'*w3}┘"
+def print_match_table(match_type: str, teams: list[list[str]]) -> None:
+    # compute rows & widths
+    N = len(teams)
+    rows = max(len(t) for t in teams)
+    widths = [max((disp_len(p) for p in t), default=0) for t in teams]
+    w_vs = disp_len("vs")
+
+    # top border
+    border_parts = []
+    for i in range(N):
+        border_parts.append("─" * widths[i])
+        if i < N - 1:
+            border_parts.append("─" * w_vs)
+    top = "┌" + "┬".join(border_parts) + "┐"
+
+    # bottom border
+    bottom = "└" + "┴".join(border_parts) + "┘"
+
     print(match_type)
     print(top)
-    rows = max(len(left), len(right))
-    for i in range(rows):
-        l = left[i] if i < len(left) else ''
-        r = right[i] if i < len(right) else ''
-        mid = 'vs' if i == rows // 2 else ''
-        line = '│' + pad_center(l, w1) + '│' + pad_center(mid, w2) + '│' + pad_center(r, w3) + '│'
-        print(line)
+
+    mid_row = rows // 2
+    for r in range(rows):
+        row_parts = []
+        for i in range(N):
+            cell = teams[i][r] if r < len(teams[i]) else ""
+            row_parts.append(pad_center(cell, widths[i]))
+            if i < N - 1:
+                sep = "vs" if r == mid_row else ""
+                row_parts.append(pad_center(sep, w_vs))
+        print("│" + "│".join(row_parts) + "│")
+
     print(bottom)
+    print()
 
 
 def main():
     parser = argparse.ArgumentParser(description="Display Stardom event card.")
-    parser.add_argument("n", nargs="?", type=int, default=1,
-                        help="Which show (1=next, 2=second, etc.)")
-    parser.add_argument("-e", "--english", action="store_true",
-                        help="Translate match types and names to English via Google Translate API")
+    parser.add_argument(
+        "-d", "--date", metavar="YYYYMMDD",
+        help="Scrape exact date (e.g. 20250517)"
+    )
+    parser.add_argument(
+        "-c", "--compact", action="store_true",
+        help="Compact mode: single line per match"
+    )
+    parser.add_argument(
+        "n", nargs="?", type=int, default=1,
+        help="Which upcoming show (1=next, 2=second, ...) ignored if --date"
+    )
+    parser.add_argument(
+        "-e", "--english", action="store_true",
+        help="Translate match types and names to English"
+    )
     args = parser.parse_args()
 
-    links = get_card_links()
-    if not links:
-        sys.exit("No cards found.")
-    if args.n < 1 or args.n > len(links):
-        sys.exit(f"Only found {len(links)} card(s).")
+    # choose URL
+    if args.date:
+        url = f"https://wwr-stardom.com/event/{args.date}/"
+    else:
+        links = get_card_links()
+        if not links:
+            sys.exit("No cards found.")
+        if args.n < 1 or args.n > len(links):
+            sys.exit(f"Only found {len(links)} card(s).")
+        url = links[args.n - 1]
 
-    title, matches = parse_card(links[args.n - 1])
+    title, matches = parse_card(url)
 
-    # Handle translations
-    print_matches = []
+    # translation
     if args.english:
-        translator = GoogleTranslator(source='ja', target='en')
-        # collect unique texts
-        originals = [title]
+        translator = GoogleTranslator(source="ja", target="en")
+        originals = [title] + [m["type"] for m in matches]
         for m in matches:
-            originals.append(m['type'])
-            originals.extend(m['left'])
-            originals.extend(m['right'])
-        seen = {}  # preserve order
-        for text in originals:
-            if text and text not in seen:
-                seen[text] = None
+            for team in m["teams"]:
+                originals.extend(team)
+
+        # dedupe, preserve order
+        seen = {}
+        for o in originals:
+            if o and o not in seen:
+                seen[o] = None
         originals = list(seen.keys())
+
         # batch translate
-        translations = translator.translate_batch(originals)
-        mapping = dict(zip(originals, translations))
+        translated = translator.translate_batch(originals)
+        mapping = dict(zip(originals, translated))
+
+        # apply overrides
+        for jp, en in NAME_OVERRIDES.items():
+            mapping[jp] = en
+
+        # remap everything
         title = mapping.get(title, title)
         for m in matches:
-            mtype = mapping.get(m['type'], m['type'])
-            left = [mapping.get(name, name) for name in m['left']]
-            right = [mapping.get(name, name) for name in m['right']]
-            print_matches.append({'type': mtype, 'left': left, 'right': right})
-    else:
-        title = title
-        print_matches = [{'type': m['type'], 'left': m['left'], 'right': m['right']} for m in matches]
+            m["type"] = mapping.get(m["type"], m["type"])
+            m["teams"] = [
+                [mapping.get(p, p) for p in team]
+                for team in m["teams"]
+            ]
 
-    # Compute uniform widths
-    w2 = disp_len('vs')
-    w1 = max((disp_len(n) for m in print_matches for n in m['left']), default=0)
-    w3 = max((disp_len(n) for m in print_matches for n in m['right']), default=0)
-
+    # print title
     print(f"{title}\n")
-    for m in print_matches:
-        print_match_table(m['type'], m['left'], m['right'], w1, w2, w3)
+
+    # output
+    for idx, m in enumerate(matches, start=1):
+        if args.compact:
+            num = f"{idx:02d}"
+            # join participants within each team by "."
+            team_strs = [".".join(team) for team in m["teams"]]
+            # .vs. between teams
+            line = f"{num}.{m['type']}:" + ".vs.".join(team_strs)
+            print(line)
+        else:
+            print_match_table(m["type"], m["teams"])
+
 
 if __name__ == "__main__":
     main()
