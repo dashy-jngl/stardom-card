@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "stardom-card"
-version = "0.1.0"
+version = "0.1.1"
 description = "CLI tool to scrape and display World Wonder Ring Stardom match cards."
 readme = "README.md"
 requires-python = ">=3.7"
