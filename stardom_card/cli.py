@@ -31,7 +31,7 @@ NAME_OVERRIDES = {
     "デビー・カイテル": "Debbie Keitel",
     "ダンプ松本": "Dump Matsumoto",
     #E
-    "儛島エマ": "Emma Maishima",
+    "儛島エマ": "Ema Maishima",
     #F
     "フキゲンです★": "Fukigen Death",
     
