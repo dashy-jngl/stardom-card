@@ -2,6 +2,8 @@
 import sys
 import argparse
 import requests
+from urllib.parse import urljoin
+
 from bs4 import BeautifulSoup
 from wcwidth import wcswidth
 from deep_translator import GoogleTranslator
@@ -11,9 +13,11 @@ SCHEDULE_URL = "https://wwr-stardom.com/schedule"
 NAME_OVERRIDES = {
     #A
     "アイリカ": "Airica",
+    "相羽あいな": "Aina Aiba",
     "鉄アキラ": "Akira Kurogane",
     "壮麗亜美": "Ami Sorei",
     "金屋あんね": "Anne Kanaya",
+    "水波綾": "Aniki",
     "星輝ありさ": "Arisa Hoshiki",
     "郷田明日香" : "Asuka Goda",
     "アティーナ": "Athena",
@@ -24,7 +28,10 @@ NAME_OVERRIDES = {
     #C
     "橋本千紘": "Chihiro Hashimoto",
     #D
+    "デビー・カイテル": "Debbie Keitel",
     "ダンプ松本": "Dump Matsumoto",
+    #E
+    "儛島エマ": "Emma Maishima",
     #F
     "フキゲンです★": "Fukigen Death",
     
@@ -35,6 +42,7 @@ NAME_OVERRIDES = {
     "叶ミク": "Himiko",
     "妃南": "Hina",
     "姫ゆりあ": "Hime-Yuria",
+    "松本浩代": "Hiroyo Matsumoto",
     "炎華": "Honoka",
     "花穂ノ利": "Hanori Hana",
     "葉月": "Hazuki",
@@ -48,7 +56,9 @@ NAME_OVERRIDES = {
     "関口翔": "Kakeru Sekiguchi",
     "カリエンティタ": "Kalientita",
     "米山香織": "Kaori Yoneyama",
+    "伊藤薫": "Kaoru Ito",
     "ケルシー・ヘザー": "Kelsey Heather",
+    "古沢稀杏": "Kikyou Furusawa",
     "虎龍清花": "Kiyoka Kotatsu",
     "コグマ": "Koguma",
     "狐伯": "Kohaku",
@@ -66,10 +76,12 @@ NAME_OVERRIDES = {
     "マヤ・ワールド": "Maya World",
     "岩谷麻優": "Mayu Iwatani",
     "岩谷麻由": "Mayu Iwatani",
+    "尾崎魔弓": "Mayumi Ozaki",
     "マゼラティ": "Mazzerati",
     "メーガン・ベーン": "Megan Bayne",
     "星来芽依": "Mei Seira",
     "岩田美香": "Mika Iwata",
+    "叶ミク": "Miku Kanae",
     "白川未奈": "Mina Shirakawa",
     "光芽ミリア": "Miria Koga",
     "神姫楽ミサ": "Misa Kagura",
@@ -84,19 +96,22 @@ NAME_OVERRIDES = {
     "高橋奈七永": "Nanae Takahashi",
     #R
     "八神蘭奈": "Ranna Yagami",
+    "救世忍者乱丸": "Ranmaru",
     "ラム会長": "Ram Kaicho",
     "レイチェル・ローズ ": "Raychell Rose",
     "梨杏": "Rian",
     "吏南": "Rina",
+    "網倉理奈": "Rina Amikura",
     "山下りな": "Rina Yamashita",
     "琉悪夏": "Ruaka",
     #S
     "鹿島沙希": "Saki Kashima",
+    "シン・広田さくら": "Sakura Hirota",
     "安納サオリ": "Saori Anou",
     "咲蘭": "Saran",
     "飯田沙耶": "Saya Iida",
     "上谷沙弥": "Saya Kamitani",
-
+    "加藤園子": "Sonoko Kato",
     "ソイ": "Soy",
     "スターライト・キッド": "Starlight Kid",
     "鈴季すず":"Suzu Suzuki",
@@ -118,9 +133,11 @@ NAME_OVERRIDES = {
     #X
     "ジーナ": "Xena",
     #Y
+    "櫻井裕子": "Yuko Sakurai",
     "マコトユマ": "Yuma Makoto",
     "まなせゆうな": "Yuna Manase",
-    "堀田 祐美子": "Yumiko Hotta",
+    "水森由菜" : "Yuna Mizumori",
+    "堀田祐美子": "Yumiko Hotta",
     "岡優里佳": "Yurika Oka",
     "優宇": "Yuu",
     
@@ -136,6 +153,33 @@ def get_card_links() -> list[str]:
         a["href"]
         for a in soup.find_all("a", class_="btn", string="対戦カード")
     ]
+
+def get_card_links_two_months() -> list[str]:
+    
+    links: list[str] = []
+
+    # 1) current month
+    r = requests.get(SCHEDULE_URL)
+    r.raise_for_status()
+    soup = BeautifulSoup(r.text, "html.parser")
+    for a in soup.find_all("a", class_="btn", string="対戦カード"):
+        links.append(a["href"])
+
+    # 2) next month, if there's a NEXT button
+    nxt = soup.select_one("a.calendar_btn_next")
+    if nxt and nxt.get("href"):
+        href = nxt["href"]
+        # strip leading "./" if present
+        if href.startswith("./"):
+            href = href[2:]
+        next_url = urljoin(SCHEDULE_URL, href)
+        r2 = requests.get(next_url)
+        r2.raise_for_status()
+        soup2 = BeautifulSoup(r2.text, "html.parser")
+        for a in soup2.find_all("a", class_="btn", string="対戦カード"):
+            links.append(a["href"])
+
+    return links
 
 
 def parse_card(url: str) -> tuple[str, list[dict]]:
@@ -264,11 +308,11 @@ def main():
     if args.date:
         url = f"https://wwr-stardom.com/event/{args.date}/"
     else:
-        links = get_card_links()
+        links = get_card_links_two_months()
         if not links:
             sys.exit("No cards found.")
         if args.n < 1 or args.n > len(links):
-            sys.exit(f"Only found {len(links)} card(s).")
+            sys.exit(f"Only found {len(links)} card(s). {links} ")
         url = links[args.n - 1]
 
     title, matches = parse_card(url)
